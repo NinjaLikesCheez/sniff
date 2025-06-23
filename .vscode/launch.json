@@ -1,0 +1,30 @@
+{
+	"configurations": [
+		{
+			"type": "swift",
+			"request": "launch",
+			"args": [
+				"available",
+				"/Applications/Xcode-26.0.0-Beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/",
+				"Network",
+				// "--platform",
+				// "iOS 26.0",
+				"--platform",
+				"macOS 1.0"
+			],
+			"cwd": "${workspaceFolder:swiff}",
+			"name": "Debug swiff",
+			"program": "${workspaceFolder:swiff}/.build/debug/swiff",
+			"preLaunchTask": "swift: Build Debug swiff"
+		},
+		{
+			"type": "swift",
+			"request": "launch",
+			"args": [],
+			"cwd": "${workspaceFolder:swiff}",
+			"name": "Release swiff",
+			"program": "${workspaceFolder:swiff}/.build/release/swiff",
+			"preLaunchTask": "swift: Build Release swiff"
+		}
+	]
+}
