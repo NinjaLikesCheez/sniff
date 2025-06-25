@@ -2,7 +2,7 @@ import Foundation
 import SwiftParser
 import SwiftSyntax
 
-public struct Framework: Hashable, Sendable {
+public struct Framework: Hashable, Codable, Sendable {
 	public let name: String
 	public let path: URL
 	public let swiftInterface: URL?
@@ -20,7 +20,7 @@ public struct Framework: Hashable, Sendable {
 			.appendingPathComponent("Modules")
 			.appendingPathComponent("\(name).swiftmodule")
 
-		// TODO: Support other architectures and platforms
+		// TODO: Support other architectures and platforms?
 		let possibleInterfacePaths = [
 			modulePath.appendingPathComponent("arm64e-apple-ios.swiftinterface"),
 			modulePath.appendingPathComponent("arm64-apple-ios.swiftinterface"),

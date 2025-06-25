@@ -7,10 +7,10 @@
 				"available",
 				"/Applications/Xcode-26.0.0-Beta.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/",
 				"Network",
-				// "--platform",
-				// "iOS 26.0",
 				"--platform",
-				"macOS 1.0"
+				"iOS 26.0",
+				"--output",
+				"Network.txt"
 			],
 			"cwd": "${workspaceFolder:swiff}",
 			"name": "Debug swiff",

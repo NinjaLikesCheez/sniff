@@ -28,7 +28,3 @@ public enum AvailabilityArgumentOption {
 	case noAsync
 	case unavailable
 }
-
-extension DeclSyntax {
-
-}
