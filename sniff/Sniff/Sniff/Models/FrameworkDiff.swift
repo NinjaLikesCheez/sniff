@@ -7,6 +7,20 @@
 import Foundation
 import SwiftUI
 
+struct Line: Identifiable, Hashable {
+	var id: UUID { UUID() }
+
+	let lineNumber: Int
+	let text: String
+	let changeStatus: ChangeStatus
+
+	enum ChangeStatus {
+		case added
+		case removed
+		case unchanged
+	}
+}
+
 struct FrameworkDiff {
 	typealias Difference = CollectionDifference<String>
 
@@ -21,7 +35,7 @@ struct FrameworkDiff {
 
 	let difference: Difference
 
-	let attributedLines: [AttributedString]
+	let attributedLines: [Line]
 
 	init(againstSDK: XcodeModel.SDK, toSDK: XcodeModel.SDK, framework: XcodeModel.Framework) {
 		self.againstSDK = againstSDK
@@ -52,8 +66,8 @@ struct FrameworkDiff {
 		attributedLines = Self.attributeLines(toLines: toLines, difference: difference)
 	}
 
-	static func attributeLines(toLines: [String], difference: Difference) -> [AttributedString] {
-		var attributedStrings = [AttributedString]()
+	static func attributeLines(toLines: [String], difference: Difference) -> [Line] {
+		var attributedStrings = [Line]()
 		attributedStrings.reserveCapacity(toLines.count)
 
 		// All inserted indicies
@@ -76,15 +90,19 @@ struct FrameworkDiff {
 			}
 
 		for (index, line) in toLines.enumerated() {
-			var attributedLine = AttributedString(line + "\n")
+//			var attributedLine = AttributedString(line + "\n")
 
 			if insertedIndicies.contains(index) {
-				attributedLine.backgroundColor = .green
+//				attributedLine.backgroundColor = .green
+				attributedStrings.append(.init(lineNumber: index, text: line + "\n", changeStatus: .added))
 			} else if removedIndicies.contains(index) {
-				attributedLine.backgroundColor = .red
+//				attributedLine.backgroundColor = .red
+				attributedStrings.append(.init(lineNumber: index, text: line + "\n", changeStatus: .removed))
+			} else {
+				attributedStrings.append(.init(lineNumber: index, text: line + "\n", changeStatus: .unchanged))
 			}
 
-			attributedStrings.append(attributedLine)
+//			attributedStrings.append(attributedLine)
 		}
 
 		return attributedStrings

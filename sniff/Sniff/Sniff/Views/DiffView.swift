@@ -12,12 +12,19 @@ struct DiffView: View {
 
 	var body: some View {
 		ScrollView {
-			VStack(alignment: .leading, spacing: 0) {
-				// TODO: this identity is niet goed broer
-				ForEach(diff.attributedLines, id: \.self) { line in
-					Text(line)
-						.multilineTextAlignment(.leading)
-						.frame(maxWidth: .infinity, alignment: .leading)
+			// TODO: this identity is niet goed broer
+			ForEach(diff.attributedLines) { line in
+				HStack(alignment: .center) {
+					Text("\(line.lineNumber)")
+					Text(line.text)
+				}
+				.frame(maxWidth: .infinity, alignment: .leadingFirstTextBaseline)
+				.background {
+					switch line.changeStatus {
+					case .added: Color.green.opacity(0.18)
+					case .removed: /*Color.red.opacity(0.18)*/ Color.clear // removals don't appear to be working :/
+					case .unchanged: Color.clear
+					}
 				}
 			}
 		}
