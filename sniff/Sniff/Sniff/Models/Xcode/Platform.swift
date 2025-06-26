@@ -7,22 +7,6 @@
 
 import Foundation
 
-/* 	static func sdks(in path: URL, for platforms: [Platform]) -> [SDK] {
- platforms
- .map { platform in
- let sdkPath = path
- .appending(path: "Contents")
- .appending(path: "Developer")
- .appending(path: "Platforms")
- .appending(path: platform.rawValue)
- .appending(path: "Developer")
- .appending(path: "SDKs")
- .appending(path: "\(platform.pathName).sdk")
-
- return SDK(path: sdkPath, platform: platform)
- }
- }*/
-
 extension XcodeModel {
 	struct Platform: Hashable, Identifiable {
 		var id: URL { path }

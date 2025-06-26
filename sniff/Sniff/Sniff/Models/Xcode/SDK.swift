@@ -11,8 +11,15 @@ extension XcodeModel {
 		var id: URL { path }
 		
 		let path: URL
+		let frameworks: [Framework]
 
-		var frameworks: [Framework] {
+		init(path: URL) {
+			self.path = path
+
+			self.frameworks = Self.findFrameworks(in: path)
+		}
+
+		static func findFrameworks(in path: URL) -> [Framework] {
 			FileManager.default
 				.filteredContents(
 					of: path
@@ -24,6 +31,10 @@ extension XcodeModel {
 					filter: { $0.pathExtension == "framework" }
 				)
 				.map { Framework(path: $0) }
+		}
+
+		func findFramework(named name: String) -> Framework? {
+			frameworks.first { $0.name == name }
 		}
 	}
 }

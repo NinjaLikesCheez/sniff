@@ -46,7 +46,13 @@ struct ComparisonView: View {
 			)
 		} detail: {
 			if let frameworkSelection {
-				DiffView(comparison: $comparison, platform: platformSelection, framework: frameworkSelection)
+				DiffView(
+					diff: .init(
+						againstSDK: comparison.against.platform(for: platformSelection.type).sdk,
+						toSDK: platformSelection.sdk,
+						framework: frameworkSelection
+					)
+				)
 			} else {
 				ContentUnavailableView("Select a Framework", systemImage: "briefcase")
 			}

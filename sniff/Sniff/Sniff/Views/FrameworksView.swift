@@ -12,7 +12,7 @@ struct FrameworksView: View {
 	@Binding var selection: XcodeModel.Framework?
 
 	var sortedFrameworks: [XcodeModel.Framework] {
-		comparison.to.sorted(by: { $0.name < $1.name })
+		comparison.to.values.sorted(by: { $0.name < $1.name })
 	}
 
 	init(comparison: XcodeComparison.FrameworksComparison, selection: Binding<XcodeModel.Framework?>) {
@@ -30,7 +30,7 @@ struct FrameworksView: View {
 		let insertions = comparison.difference.insertions.filter { insertion in
 			switch insertion {
 			case .insert(offset: _, element: let inserted, associatedWith: _):
-				return inserted.name == framework.name
+				return inserted == framework.name
 			default: return false
 			}
 		}
@@ -42,7 +42,7 @@ struct FrameworksView: View {
 		let removals = comparison.difference.insertions.filter { insertion in
 			switch insertion {
 			case .remove(offset: _, element: let removed, associatedWith: _):
-				return removed.name == framework.name
+				return removed == framework.name
 			default: return false
 			}
 		}
@@ -55,8 +55,7 @@ struct FrameworksView: View {
 	}
 
 	var body: some View {
-		Self._printChanges()
-		return List(sortedFrameworks, selection: $selection) { framework in
+		List(sortedFrameworks, selection: $selection) { framework in
 			HStack {
 				Text(framework.name)
 
@@ -67,6 +66,11 @@ struct FrameworksView: View {
 					ChangeLabel("Removed", tint: .red)
 				case .same:
 					EmptyView()
+				}
+			}
+			.contextMenu {
+				Button("Open in Finder") {
+					NSWorkspace.shared.activateFileViewerSelecting([framework.path])
 				}
 			}
 			.tag(framework)
