@@ -26,6 +26,9 @@ struct ComparisonView: View {
 			List(comparison.to.platforms.sorted(by: { $0.name < $1.name }), selection: $platformSelection) { platform in
 				Label(platform.name, systemImage: platform.systemImage)
 					.tag(platform)
+					.onChange(of: platformSelection) { _, _ in
+						frameworkSelection = nil
+					}
 			}
 			.toolbar {
 				ToolbarItem(placement: .principal) {

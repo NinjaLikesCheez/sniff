@@ -7,72 +7,65 @@
 
 import SwiftUI
 
-struct DiffView: View {
-	var diff: FrameworkDiff
+struct ExpandableDiff: Identifiable {
+	let id = UUID()
+	var isExpanded: Bool = false
 
-	var body: some View {
-		ScrollView {
-			// TODO: this identity is niet goed broer
-			ForEach(diff.attributedLines) { line in
-				HStack(alignment: .center) {
-					Text("\(line.lineNumber)")
-					Text(line.text)
-				}
-				.frame(maxWidth: .infinity, alignment: .leadingFirstTextBaseline)
-				.background {
-					switch line.changeStatus {
-					case .added: Color.green.opacity(0.18)
-					case .removed: /*Color.red.opacity(0.18)*/ Color.clear // removals don't appear to be working :/
-					case .unchanged: Color.clear
-					}
-				}
-			}
-		}
-	}
+	var diff: FrameworkDiff.FileDiff
 
-	func tint(for line: String) -> Color {
-		switch changeStatus(for: line) {
-		case .added:
-				.green
-		case .removed:
-				.red
-		case .same:
-				.clear
-		}
-	}
-
-	enum ChangeStatus {
-		case added
-		case removed
-		case same
-	}
-
-	func changeStatus(for line: String) -> ChangeStatus {
-		let insertions = diff.difference.insertions.filter { insertion in
-			switch insertion {
-			case .insert(offset: _, element: let inserted, associatedWith: _):
-				return inserted == line
-			default: return false
-			}
-		}
-
-		guard insertions.isEmpty else {
-			return .added
-		}
-
-		let removals = diff.difference.insertions.filter { insertion in
-			switch insertion {
-			case .remove(offset: _, element: let removed, associatedWith: _):
-				return removed == line
-			default: return false
-			}
-		}
-
-		guard removals.isEmpty else {
-			return .removed
-		}
-
-		return .same
+	init(diff: FrameworkDiff.FileDiff) {
+		self.diff = diff
 	}
 }
 
+struct DiffView: View {
+	var diff: FrameworkDiff
+
+	@State private var sections: [ExpandableDiff]
+
+	init(diff: FrameworkDiff) {
+		self.diff = diff
+
+		do {
+			self.sections = try diff.diff().map { ExpandableDiff(diff: $0) }
+			print("no of sections: \(self.sections.count)")
+		} catch {
+			fatalError("error: \(error.localizedDescription)")
+		}
+	}
+
+	var body: some View {
+		List {
+			ForEach($sections) { $section in
+				DisclosureGroup(
+					isExpanded: $section.isExpanded,
+					content: {
+						switch section.diff.diff {
+						case let .diff(against, to):
+							SnippetDiffPreview(originalCode: against, newCode: to)
+						case let .added(new):
+							SnippetDiffPreview(originalCode: "", newCode: new)
+						case let .removed(old):
+							SnippetDiffPreview(originalCode: old, newCode: "")
+						}
+					},
+					label: {
+						HStack {
+							Text(section.diff.name)
+								.font(.headline)
+
+							switch section.diff.diff {
+							case .diff:
+								ChangeLabel("Modified", tint: .blue)
+							case .added:
+								ChangeLabel("Added", tint: .green)
+							case .removed:
+								ChangeLabel("Removed", tint: .red)
+							}
+						}
+					}
+				)
+			}
+		}
+	}
+}

@@ -12,10 +12,11 @@ extension XcodeModel {
 
 		let name: String
 		let path: URL
-		let swiftInterface: URL?
+
+		let diffablePaths: [URL]
 
 		public enum Error: Swift.Error {
-			case noSwiftInterface
+			case noDiffablePaths
 		}
 
 		public init(path: URL) {
@@ -23,28 +24,21 @@ extension XcodeModel {
 			self.path = path
 
 			let modulePath = path
-				.appendingPathComponent("Modules")
-				.appendingPathComponent("\(name).swiftmodule")
+				.appending(path: "Modules")
+				.appending(path: "\(name).swiftmodule")
 
-			// TODO: Support other architectures and platforms?
-			let possibleInterfacePaths = [
-				modulePath.appendingPathComponent("arm64e-apple-ios.swiftinterface"),
-				modulePath.appendingPathComponent("arm64-apple-ios.swiftinterface"),
-			]
+			let headerPath = path
+				.appending(path: "Headers")
 
-			var interfacePath: URL? = nil
-			for path in possibleInterfacePaths {
-				if FileManager.default.fileExists(atPath: path.path) {
-					interfacePath = path
-					break
-				}
+			var diffablePaths = FileManager.default.filteredContents(of: modulePath) { path in
+				path.pathExtension == "swiftinterface"
 			}
 
-			self.swiftInterface = interfacePath
-		}
+			diffablePaths.append(contentsOf: FileManager.default.filteredContents(of: headerPath) { path in
+				path.pathExtension == "h"
+			})
 
-		public var hasSwiftInterface: Bool {
-			swiftInterface != nil
+			self.diffablePaths = diffablePaths
 		}
 	}
 }

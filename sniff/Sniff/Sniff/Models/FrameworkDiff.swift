@@ -21,7 +21,7 @@ struct Line: Identifiable, Hashable {
 	}
 }
 
-struct FrameworkDiff {
+class FrameworkDiff {
 	typealias Difference = CollectionDifference<String>
 
 	let againstSDK: XcodeModel.SDK
@@ -30,12 +30,8 @@ struct FrameworkDiff {
 	let againstFramework: XcodeModel.Framework?
 	let toFramework: XcodeModel.Framework
 
-	let toLines: [String]
-	let againstLines: [String]
-
-	let difference: Difference
-
-	let attributedLines: [Line]
+	let againstFilePaths: [String: URL]
+	let toFilePaths: [String: URL]
 
 	init(againstSDK: XcodeModel.SDK, toSDK: XcodeModel.SDK, framework: XcodeModel.Framework) {
 		self.againstSDK = againstSDK
@@ -44,68 +40,76 @@ struct FrameworkDiff {
 		self.toFramework = framework
 		self.againstFramework = againstSDK.findFramework(named: framework.name)
 
-		// Currently only swift interface files are supported
-		guard let toInterface = toFramework.swiftInterface else {
-			toLines = []
-			againstLines = []
-			difference = .init([])!
-			attributedLines = []
-			print("Not a swift framework!")
-			return
-		}
-
-		self.toLines = try! String(contentsOf: toInterface, encoding: .utf8).components(separatedBy: .newlines)
-		var againstLines: [String] = []
-
-		if let againstInterface = againstFramework?.swiftInterface {
-			againstLines = (try? String(contentsOf: againstInterface, encoding: .utf8).components(separatedBy: .newlines)) ?? []
-		}
-		self.againstLines = againstLines
-
-		self.difference = toLines.difference(from: againstLines)
-		attributedLines = Self.attributeLines(toLines: toLines, difference: difference)
+		self.againstFilePaths = againstFramework?.diffablePaths.reduce(into: [:], { $0[$1.lastPathComponent] = $1 }) ?? [:]
+		self.toFilePaths = toFramework.diffablePaths.reduce(into: [:], { $0[$1.lastPathComponent] = $1 })
 	}
 
-	static func attributeLines(toLines: [String], difference: Difference) -> [Line] {
-		var attributedStrings = [Line]()
-		attributedStrings.reserveCapacity(toLines.count)
+	func diff() throws -> [FileDiff] {
+		let toFileKeys = Set(toFilePaths.keys)
+		let againstFileKeys = Set(againstFilePaths.keys)
 
-		// All inserted indicies
-		let insertedIndicies: [Int] = difference.insertions
-			.compactMap { change in
-				if case let .insert(offset, element, associatedWith) = change {
-					return offset
+		let differences = Array(toFilePaths.keys).difference(from: Array(againstFilePaths.keys)).inferringMoves()
+		let common = toFileKeys.intersection(againstFileKeys)
+
+		var result = [FileDiff]()
+
+		for difference in differences {
+			switch difference {
+			case let .insert(offset: _, element: element, associatedWith: associatedWith):
+				if associatedWith == nil {
+					result.append(
+						.init(
+							to: toFilePaths[element]!,
+							against: nil,
+							diff: .added(try String(contentsOf: toFilePaths[element]!, encoding: .utf8))
+						)
+					)
 				}
-
-				return nil
-			}
-
-		let removedIndicies: [Int] = difference.removals
-			.compactMap { change in
-				if case let .remove(offset, element, associatedWith) = change {
-					return offset
+			case let .remove(offset: _, element: element, associatedWith: associatedWith):
+				if associatedWith == nil {
+					result.append(
+						.init(
+							to: nil,
+							against: againstFilePaths[element]!,
+							diff: .removed(try String(contentsOf: againstFilePaths[element]!, encoding: .utf8))
+						)
+					)
 				}
-
-				return nil
 			}
-
-		for (index, line) in toLines.enumerated() {
-//			var attributedLine = AttributedString(line + "\n")
-
-			if insertedIndicies.contains(index) {
-//				attributedLine.backgroundColor = .green
-				attributedStrings.append(.init(lineNumber: index, text: line + "\n", changeStatus: .added))
-			} else if removedIndicies.contains(index) {
-//				attributedLine.backgroundColor = .red
-				attributedStrings.append(.init(lineNumber: index, text: line + "\n", changeStatus: .removed))
-			} else {
-				attributedStrings.append(.init(lineNumber: index, text: line + "\n", changeStatus: .unchanged))
-			}
-
-//			attributedStrings.append(attributedLine)
 		}
 
-		return attributedStrings
+		for element in common {
+			result.append(
+				.init(
+					to: toFilePaths[element]!,
+					against: againstFilePaths[element]!,
+					diff: .diff(
+						against: try String(contentsOf: toFilePaths[element]!, encoding: .utf8),
+						to: try String(contentsOf: againstFilePaths[element]!, encoding: .utf8)
+					)
+				)
+			)
+		}
+
+		print("resulting \(result.count) results")
+
+		return result
+	}
+
+	struct FileDiff: Identifiable {
+		var name: String { to?.lastPathComponent ?? against?.lastPathComponent ?? "Unknown" }
+
+		var id: String { name }
+
+		let to: URL?
+		let against: URL?
+
+		let diff: Diff
+
+		enum Diff {
+			case added(String)
+			case removed(String)
+			case diff(against: String, to: String)
+		}
 	}
 }
-
