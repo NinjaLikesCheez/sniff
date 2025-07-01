@@ -84,14 +84,14 @@ class FrameworkDiff {
 					to: toFilePaths[element]!,
 					against: againstFilePaths[element]!,
 					diff: .diff(
-						against: try String(contentsOf: toFilePaths[element]!, encoding: .utf8),
-						to: try String(contentsOf: againstFilePaths[element]!, encoding: .utf8)
+						snippet: CodeDiff.diff(
+							snippet: try String(contentsOf: toFilePaths[element]!, encoding: .utf8),
+							from: try String(contentsOf: againstFilePaths[element]!, encoding: .utf8)
+						)
 					)
 				)
 			)
 		}
-
-		print("resulting \(result.count) results")
 
 		return result
 	}
@@ -109,7 +109,7 @@ class FrameworkDiff {
 		enum Diff {
 			case added(String)
 			case removed(String)
-			case diff(against: String, to: String)
+			case diff(snippet: CodeDiff.SnippetDiff)
 		}
 	}
 }

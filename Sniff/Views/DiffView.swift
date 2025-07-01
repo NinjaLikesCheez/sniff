@@ -41,12 +41,12 @@ struct DiffView: View {
 					isExpanded: $section.isExpanded,
 					content: {
 						switch section.diff.diff {
-						case let .diff(against, to):
-							SnippetDiffPreview(originalCode: against, newCode: to)
+						case let .diff(snippet):
+							SnippetDiffPreview(diff: snippet)
 						case let .added(new):
-							SnippetDiffPreview(originalCode: "", newCode: new)
+							SnippetDiffPreview(diff: CodeDiff.diff(snippet: new, from: ""))
 						case let .removed(old):
-							SnippetDiffPreview(originalCode: old, newCode: "")
+							SnippetDiffPreview(diff: CodeDiff.diff(snippet: "", from: old))
 						}
 					},
 					label: {

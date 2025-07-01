@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct FrameworksView: View {
-	var comparison: XcodeComparison.FrameworksComparison
+	@Environment(DataModel.self) var dataModel
 	@Binding var selection: XcodeModel.Framework?
 
+
 	var sortedFrameworks: [XcodeModel.Framework] {
-		comparison.to.values.sorted(by: { $0.name < $1.name })
+		dataModel.comparison.to.values.sorted(by: { $0.name < $1.name })
 	}
 
 	init(comparison: XcodeComparison.FrameworksComparison, selection: Binding<XcodeModel.Framework?>) {

@@ -16,30 +16,28 @@ enum CompareType {
 final class DataModel {
 	enum DisplayMode {
 		case choosePaths
-		case comparison(XcodeComparison)
+		case comparison
+		case loadingFrameworks
 	}
 
-	var displayMode: DisplayMode {
+	var comparison: XcodeComparison? {
 		willSet {
-			switch newValue {
-			case .comparison(let comparison):
-				UserDefaults.standard.set(comparison.against.path, forKey: "against")
-				UserDefaults.standard.set(comparison.to.path, forKey: "to")
-			case .choosePaths:
+			if newValue == nil {
 				UserDefaults.standard.removeObject(forKey: "against")
 				UserDefaults.standard.removeObject(forKey: "to")
+			} else {
+				UserDefaults.standard.set(comparison.against.path, forKey: "against")
+				UserDefaults.standard.set(comparison.to.path, forKey: "to")
 			}
 		}
 	}
 
+	var displayMode: DisplayMode
+
 	init() {
 		// rehydrate
 		if let against = UserDefaults.standard.url(forKey: "against"), let to = UserDefaults.standard.url(forKey: "to") {
-			do {
-				displayMode = .comparison(.init(against: try .init(path: against), to: try .init(path: to)))
-			} catch {
-				displayMode = .choosePaths
-			}
+			displayMode = .comparison
 		} else {
 			displayMode = .choosePaths
 		}
@@ -47,5 +45,9 @@ final class DataModel {
 
 	func reset() {
 		displayMode = .choosePaths
+	}
+
+	func parsePlatform(_ platform: platformSelection) -> [XcodeModel.Framework] {
+		
 	}
 }
