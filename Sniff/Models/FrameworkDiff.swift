@@ -24,16 +24,16 @@ struct Line: Identifiable, Hashable {
 class FrameworkDiff {
 	typealias Difference = CollectionDifference<String>
 
-	let againstSDK: XcodeModel.SDK
-	let toSDK: XcodeModel.SDK
+	let againstSDK: Xcode.SDK
+	let toSDK: Xcode.SDK
 
-	let againstFramework: XcodeModel.Framework?
-	let toFramework: XcodeModel.Framework
+	let againstFramework: Xcode.Framework?
+	let toFramework: Xcode.Framework
 
 	let againstFilePaths: [String: URL]
 	let toFilePaths: [String: URL]
 
-	init(againstSDK: XcodeModel.SDK, toSDK: XcodeModel.SDK, framework: XcodeModel.Framework) {
+	init(againstSDK: Xcode.SDK, toSDK: Xcode.SDK, framework: Xcode.Framework) {
 		self.againstSDK = againstSDK
 		self.toSDK = toSDK
 

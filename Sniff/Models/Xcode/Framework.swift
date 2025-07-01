@@ -6,7 +6,7 @@
 //
 import Foundation
 
-extension XcodeModel {
+extension Xcode {
 	struct Framework: Hashable, Identifiable {
 		var id: String { name }
 

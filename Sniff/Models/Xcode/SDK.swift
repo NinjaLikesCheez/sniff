@@ -1,4 +1,4 @@
-//
+	//
 //  SDK.swift
 //  Sniff
 //
@@ -6,7 +6,7 @@
 //
 import Foundation
 
-extension XcodeModel {
+extension Xcode {
 	struct SDK: Hashable, Identifiable {
 		var id: URL { path }
 		
@@ -16,16 +16,26 @@ extension XcodeModel {
 		init(path: URL) {
 			self.path = path
 
-			self.frameworks = Self.findFrameworks(in: path)
+			var frameworksPath = path.appending(path: "System")
+
+			if path.lastPathComponent.contains("DriverKit") {
+				// DriverKit is a special baby
+				frameworksPath = frameworksPath
+					.appending(path: "DriverKit")
+					.appending(path: "System")
+			}
+
+			frameworksPath = frameworksPath
+				.appending(path: "Library")
+				.appending(path: "Frameworks")
+
+			self.frameworks = Self.findFrameworks(in: frameworksPath)
 		}
 
 		static func findFrameworks(in path: URL) -> [Framework] {
 			FileManager.default
 				.filteredContents(
-					of: path
-						.appending(path: "System")
-						.appending(path: "Library")
-						.appending(path: "Frameworks"),
+					of: path,
 					properties: [.isDirectoryKey, .isRegularFileKey],
 					recursive: false,
 					filter: { $0.pathExtension == "framework" }

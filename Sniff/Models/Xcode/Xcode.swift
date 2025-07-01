@@ -1,5 +1,5 @@
 //
-//  XcodeModel.swift
+//  Xcode.swift
 //  Sniff
 //
 //  Created by ninji on 24/06/2025.
@@ -8,7 +8,7 @@ import SwiftUI
 import AppKit
 import Foundation
 
-struct XcodeModel {
+struct Xcode {
 	let path: URL
 	let icon: Image
 	let platforms: [Platform]
@@ -33,7 +33,7 @@ struct XcodeModel {
 }
 
 // MARK: - Finding Utilies
-extension XcodeModel {
+extension Xcode {
 	static private func findIcon(in path: URL) -> Image {
 		let icns = path
 			.appending(path: "Contents")

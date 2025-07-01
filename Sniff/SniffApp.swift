@@ -13,9 +13,16 @@ struct SniffApp: App {
 
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
-				.environment(model)
-				.frame(minWidth: Constants.minWidth, maxWidth: .infinity, minHeight: Constants.minHeight, maxHeight: .infinity)
+			NavigationStack {
+				switch model.displayMode {
+				case .choosePaths:
+					ChoosePathsView()
+				case let .comparison(comparison):
+					ComparisonView(comparison: comparison)
+				}
+			}
+			.environment(model)
+			.frame(minWidth: Constants.minWidth, maxWidth: .infinity, minHeight: Constants.minHeight, maxHeight: .infinity)
 		}
 	}
 }

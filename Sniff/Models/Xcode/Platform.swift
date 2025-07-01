@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension XcodeModel {
+extension Xcode {
 	struct Platform: Hashable, Identifiable {
 		var id: URL { path }
 
@@ -29,7 +29,7 @@ extension XcodeModel {
 	}
 }
 
-extension XcodeModel.Platform {
+extension Xcode.Platform {
 	var name: String {
 		switch type {
 		case .tvOS:

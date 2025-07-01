@@ -11,8 +11,8 @@ internal import UniformTypeIdentifiers
 struct ChoosePathsView: View {
 	@Environment(DataModel.self) var dataModel
 
-	@State private var against: XcodeModel?
-	@State private var to: XcodeModel?
+	@State private var against: Xcode?
+	@State private var to: Xcode?
 
 	var body: some View {
 		HStack {
