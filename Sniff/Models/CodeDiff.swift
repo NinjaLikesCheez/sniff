@@ -97,6 +97,8 @@ struct CodeDiff {
 			}
 		}
 
+		var text: String
+
 		var sections: [Section]
 
 		var description: String {
@@ -176,7 +178,7 @@ extension CodeDiff {
 		var oldLineIndex = 0
 		var newLineIndex = 0
 		var sectionIndex = 0
-		var result = SnippetDiff(sections: [])
+		var result = SnippetDiff(text: snippet, sections: [])
 
 		while oldLineIndex < oldLines.endIndex || newLineIndex < newLines.endIndex {
 			guard let groupItem = groups[safe: sectionIndex] else {

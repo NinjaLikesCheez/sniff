@@ -37,8 +37,17 @@ struct SDKView: View {
 						}
 					}
 					.contextMenu {
-						Button("Open in Finder") {
+						Button {
 							NSWorkspace.shared.activateFileViewerSelecting([change.framework.path])
+						} label: {
+							Label("Open in Finder", systemImage: "finder")
+						}
+
+						Button {
+							let url = URL(string: "https://developer.apple.com/documentation/")!.appending(path: change.name)
+							NSWorkspace.shared.open(url)
+						} label: {
+							Label("Open in Browser", systemImage: "safari")
 						}
 					}
 					.tag(change.framework)

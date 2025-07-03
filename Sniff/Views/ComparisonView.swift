@@ -47,8 +47,6 @@ extension ComparisonView {
 		}
 
 		func parseFrameworkChanges() {
-			frameworkComparison = nil
-
 			Task {
 				frameworkComparison = .init(
 					against: comparison.against.platform(for: platformSelection.type).sdk.findFramework(named: frameworkSelection.name),
@@ -98,8 +96,8 @@ struct ComparisonView: View {
 				selection: $viewModel.frameworkSelection
 			)
 		} detail: {
-			if viewModel.sdkComparison != nil, let comparison = viewModel.frameworkComparison {
-				DiffView(comparison: comparison)
+			if viewModel.sdkComparison != nil {
+				DiffView(comparison: $viewModel.frameworkComparison)
 			} else {
 				ContentUnavailableView("Select a Framework", systemImage: "briefcase")
 			}

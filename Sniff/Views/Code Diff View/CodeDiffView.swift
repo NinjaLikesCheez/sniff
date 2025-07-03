@@ -31,6 +31,43 @@
  */
 
 import SwiftUI
+import WebKit
+import HighlightSwift
+
+// TODO: https://stackoverflow.com/questions/54270287/wkwebview-inside-scroll-view
+struct WebViewWrapper: NSViewRepresentable {
+		var content: AttributedString
+
+	init(_ attributedString: AttributedString) {
+		self.content = attributedString
+	}
+
+		func makeNSView(context: Context) -> WKWebView {
+			let view = WKWebView()
+
+			do {
+				let nsString = NSAttributedString(content)
+				let htmlData = try nsString.data(from: NSMakeRange(0, nsString.length), documentAttributes: [.documentType: NSAttributedString.DocumentType.html])
+				let htmlString = String(data: htmlData, encoding: .utf8)!
+				view.loadHTMLString(htmlString, baseURL: nil)
+
+				return view
+			} catch {
+				fatalError("Failed to WebKit bro")
+			}
+		}
+
+		func updateNSView(_ nsView: WKWebView, context: Context) {
+			do {
+				let nsString = NSAttributedString(content)
+				let htmlData = try nsString.data(from: NSMakeRange(0, nsString.length), documentAttributes: [.documentType: NSAttributedString.DocumentType.html])
+				let htmlString = String(data: htmlData, encoding: .utf8)!
+				nsView.loadHTMLString(htmlString, baseURL: nil)
+			} catch {
+				fatalError("Failed to WebKit bro")
+			}
+		}
+}
 
 struct SnippetDiffPreview: View {
 	let diff: CodeDiff.SnippetDiff
@@ -38,9 +75,12 @@ struct SnippetDiffPreview: View {
 	var body: some View {
 		HStack(alignment: .top) {
 			let (original, new) = generateTexts()
-			block(original)
+			WebViewWrapper(original.reduce(into: AttributedString(), { $0.append($1 + "\n") }))
+				.frame(minWidth: 200, maxWidth: .infinity, minHeight: 600, maxHeight: .infinity)
 			Divider()
-			block(new)
+			//			block(new)
+			WebViewWrapper(new.reduce(into: AttributedString(), { $0.append($1 + "\n") }))
+				.frame(minWidth: 200, maxWidth: .infinity, minHeight: 600, maxHeight: .infinity)
 		}
 		.padding()
 		.font(.body.monospaced())
@@ -232,3 +272,4 @@ struct LineDiffPreview: View {
 }
 
 #endif
+

@@ -50,67 +50,57 @@ final class ExpandableDiff: Identifiable {
 }
 
 struct DiffView: View {
-	let comparison: XcodeComparison.FrameworkComparison
+	@Binding var comparison: XcodeComparison.FrameworkComparison?
 
-	@State private var sections: [ExpandableDiff]
+	@State private var sections: [ExpandableDiff] = []
 	@State private var selection: XcodeComparison.FrameworkComparison.FrameworkFile? = nil
 
-	init(comparison: XcodeComparison.FrameworkComparison) {
-		self.comparison = comparison
-		self.sections = comparison.changes.map { ExpandableDiff(change: $0) }
+	init(comparison: Binding<XcodeComparison.FrameworkComparison?>) {
+		self._comparison = comparison
 	}
 
 	var body: some View {
-		List {
-			ForEach($sections) { $section in
-				DisclosureGroup(isExpanded: $section.isExpanded) {
-					HStack {
-						if let diff = section.diff {
-							SnippetDiffPreview(diff: diff)
-						} else {
-							ProgressView("Parsing File Diff...")
-						}
-					}
-				} label: {
-					HStack {
-						Text(section.change.path.lastPathComponent)
+		Group {
+			if comparison != nil {
+				List {
+					ForEach($sections) { $section in
+						DisclosureGroup(isExpanded: $section.isExpanded) {
+							HStack {
+								if let diff = section.diff {
+									SnippetDiffPreview(diff: diff)
+								} else {
+									ProgressView("Parsing File Diff...")
+								}
+							}
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
+						} label: {
+							HStack {
+								Text(section.change.path.lastPathComponent)
 
-						switch section.change.change {
-						case .added: ChangeLabel("Added", tint: .green)
-						case .removed: ChangeLabel("Removed", tint: .red)
-						case .modified: ChangeLabel("Modified", tint: .blue)
-						case .unchanged: EmptyView()
+								switch section.change.change {
+								case .added: ChangeLabel("Added", tint: .green)
+								case .removed: ChangeLabel("Removed", tint: .red)
+								case .modified: ChangeLabel("Modified", tint: .blue)
+								case .unchanged: EmptyView()
+								}
+							}
 						}
 					}
 				}
+			} else if comparison != nil && !sections.isEmpty {
+				ProgressView("Loading File List...")
+			} else {
+				ContentUnavailableView("Select a Framework", systemImage: "briefcase")
 			}
-	}
-//			List(comparison.changes.map { ExpandableDiff(change: $0) }, selection: $selection) { section in
-//				HStack {
-//					Text(change.path.lastPathComponent)
-//
-//					// Change status label will go here
-//					switch change.change {
-//					case .added:
-//						ChangeLabel("Added", tint: .green)
-//					case .modified:
-//						ChangeLabel("Modified", tint: .blue)
-//					case .removed:
-//						ChangeLabel("Removed", tint: .red)
-//					case .unchanged:
-//						EmptyView()
-//					}
-//				}
-//				.tag(change)
-//				.contextMenu {
-//					Button("Open in Finder") {
-//						NSWorkspace.shared.activateFileViewerSelecting([change.path])
-//					}
-//				}
-//			}
-//		} else {
-//			ProgressView("Parsing File List...")
-//		}
+		}
+		.onChange(of: comparison) { oldValue, newValue in
+			guard let comparison else {
+				sections = []
+				return
+			}
+
+			sections = comparison.changes.map { ExpandableDiff(change: $0) }
+		}
 	}
 }
 

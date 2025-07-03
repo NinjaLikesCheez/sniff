@@ -100,7 +100,7 @@ extension XcodeComparison {
 }
 
 extension XcodeComparison {
-	struct FrameworkComparison {
+	struct FrameworkComparison: Equatable {
 		typealias Difference = CollectionDifference<String>
 
 		let against: Xcode.Framework?
