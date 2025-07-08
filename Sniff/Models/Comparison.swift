@@ -22,17 +22,23 @@ extension XcodeComparison {
 	struct SDKComparison {
 		typealias Difference = CollectionDifference<String>
 
-		let against: [String: Xcode.Framework]
-		let to: [String: Xcode.Framework]
+		let against: Xcode.SDK
+		let to: Xcode.SDK
+
+		let againstFrameworks: [String: Xcode.Framework]
+		let toFrameworks: [String: Xcode.Framework]
 
 		var changes: [Framework] = []
 
-		init(against: [String: Xcode.Framework], to: [String: Xcode.Framework]) {
+		init(against: Xcode.SDK, to: Xcode.SDK) {
 			self.against = against
 			self.to = to
 
-			let againstKeys = Array(self.against.keys).sorted(by: { $0 < $1 })
-			let toKeys = Array(self.to.keys).sorted(by: { $0 < $1 })
+			self.againstFrameworks = against.frameworks.reduce(into: [String: Xcode.Framework](), { $0[$1.name] = $1 })
+			self.toFrameworks = to.frameworks.reduce(into: [String: Xcode.Framework](), { $0[$1.name] = $1 })
+
+			let againstKeys = Array(self.againstFrameworks.keys).sorted(by: { $0 < $1 })
+			let toKeys = Array(self.toFrameworks.keys).sorted(by: { $0 < $1 })
 
 			let differences = toKeys.difference(from: againstKeys).inferringMoves()
 
@@ -42,11 +48,11 @@ extension XcodeComparison {
 				switch difference {
 				case let .insert(offset: _, element: name, associatedWith: associatedWith):
 					if associatedWith == nil {
-						frameworks.append(.init(framework: to[name]!, change: .added))
+						frameworks.append(.init(framework: toFrameworks[name]!, change: .added))
 					}
 				case let .remove(offset: _, element: name, associatedWith: associatedWith):
 					if associatedWith == nil {
-						frameworks.append(.init(framework: against[name]!, change: .removed))
+						frameworks.append(.init(framework: againstFrameworks[name]!, change: .removed))
 					}
 				}
 			}
@@ -55,8 +61,8 @@ extension XcodeComparison {
 			let common = Set(againstKeys).intersection(Set(toKeys))
 
 			for item in common {
-				let toCommon = to[item]!
-				let againstCommon = against[item]!
+				let toCommon = toFrameworks[item]!
+				let againstCommon = againstFrameworks[item]!
 
 				let toNamesAndPaths = toCommon.diffablePaths.reduce(into: [String: URL](), { $0[$1.lastPathComponent] = $1 })
 				let againstNamesAndPaths = againstCommon.diffablePaths.reduce(into: [String: URL](), { $0[$1.lastPathComponent] = $1 })

@@ -38,11 +38,8 @@ extension ComparisonView {
 		func parseSDKChanges() {
 			sdkComparison = nil
 
-			let againstFrameworks = comparison.against.platform(for: platformSelection.type).sdk.frameworks.reduce(into: [String: Xcode.Framework](), { $0[$1.name] = $1 })
-			let toFrameworks = platformSelection.sdk.frameworks.reduce(into: [String: Xcode.Framework](), { $0[$1.name] = $1 })
-
 			Task {
-				sdkComparison = .init(against: againstFrameworks, to: toFrameworks)
+				sdkComparison = .init(against: comparison.against.platform(for: platformSelection.type).sdk, to: platformSelection.sdk)
 			}
 		}
 

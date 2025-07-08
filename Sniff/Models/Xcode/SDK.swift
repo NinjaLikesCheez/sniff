@@ -12,6 +12,7 @@ extension Xcode {
 		
 		let path: URL
 		let frameworks: [Framework]
+		let frameworksPath: URL
 
 		init(path: URL) {
 			self.path = path
@@ -28,6 +29,8 @@ extension Xcode {
 			frameworksPath = frameworksPath
 				.appending(path: "Library")
 				.appending(path: "Frameworks")
+
+			self.frameworksPath = frameworksPath
 
 			self.frameworks = Self.findFrameworks(in: frameworksPath)
 		}

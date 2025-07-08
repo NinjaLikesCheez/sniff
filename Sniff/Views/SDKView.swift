@@ -38,16 +38,32 @@ struct SDKView: View {
 					}
 					.contextMenu {
 						Button {
-							NSWorkspace.shared.activateFileViewerSelecting([change.framework.path])
-						} label: {
-							Label("Open in Finder", systemImage: "finder")
-						}
-
-						Button {
 							let url = URL(string: "https://developer.apple.com/documentation/")!.appending(path: change.name)
 							NSWorkspace.shared.open(url)
 						} label: {
 							Label("Open in Browser", systemImage: "safari")
+						}
+
+						Button {
+							do {
+								if let againstFramework = comparison.against.findFramework(named: selection.name) {
+									let output = try Process.run("/usr/local/bin/cursor", arguments: ["--diff", againstFramework.path.path(), selection.path.path()])
+									print(output.joined(separator: "\n"))
+								} else {
+									let output = try Process.run("/usr/local/bin/cursor", arguments: [selection.path.path()])
+									print(output.joined(separator: "\n"))
+								}
+							} catch {
+								print("Error running 'cursor' command: \(error.localizedDescription)")
+							}
+						} label: {
+							Label("Open Diff in Cursor", systemImage: "notequal")
+						}
+
+						Button {
+							NSWorkspace.shared.activateFileViewerSelecting([change.framework.path])
+						} label: {
+							Label("Open in Finder", systemImage: "finder")
 						}
 					}
 					.tag(change.framework)

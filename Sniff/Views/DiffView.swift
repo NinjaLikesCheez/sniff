@@ -85,6 +85,27 @@ struct DiffView: View {
 								}
 							}
 						}
+						.contextMenu {
+							Button {
+								do {
+									if let against = section.change.against {
+										let output = try Process.run("/usr/local/bin/cursor", arguments: ["--diff", against.path(), section.change.path.path()])
+										print(output.joined(separator: "\n"))
+									} else {
+										let output = try Process.run("/usr/local/bin/cursor", arguments: [section.change.path.path()])
+										print(output.joined(separator: "\n"))
+									}
+								} catch {
+									print("Error executing 'cursor' tool")
+								}
+							} label: {
+								if section.change.against != nil {
+									Label("Open Diff in Cursor", systemImage: "notequal")
+								} else {
+									Label("Open file in Cursor", systemImage: "magnifyingglass")
+								}
+							}
+						}
 					}
 				}
 			} else if comparison != nil && !sections.isEmpty {
